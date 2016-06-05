@@ -2,6 +2,7 @@
 <?php
 
 define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
+define( 'WP_USE_THEMES', false );
 
 require_once( APP_PATH . 'load-settings.php' );
 
@@ -13,7 +14,6 @@ if ( ! is_dir( APP_PATH . 'posts' ) ) {
 	}
 }
 
-define( 'WP_USE_THEMES', false );
 include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 
 // TODO: Получение и добавление категорий
