@@ -30,6 +30,38 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		$author_id = DEFAULT_AUTHOR_ID;
 	}
 
+	if ( ! empty( $acceptor_settings['create_missing_categories'] ) ) {
+		$create_missing_categories = absint( $acceptor_settings['create_missing_categories'] ) == 1;
+	} else {
+		$create_missing_categories = CREATE_MISSING_CATEGORIES;
+	}
+
+	if ( ! empty( $acceptor_settings['default_category_id'] ) ) {
+		$default_category_id = absint( $acceptor_settings['default_category_id'] );
+	} else {
+		$default_category_id = DEFAULT_CATEGORY_ID;
+	}
+
+	if ( ! empty( $acceptor_settings['compare_category_by'] ) ) {
+		if ( in_array( esc_attr( $acceptor_settings['compare_category_by'] ), array( 'slug', 'name' ) ) ) {
+			$compare_category_by = esc_attr( $acceptor_settings['compare_category_by'] );
+		} else {
+			$compare_category_by = 'slug';
+		}
+	} else {
+		$compare_category_by = COMPARE_CATEGORY_BY;
+	}
+
+	// Retrieve all categories
+	$all_categories = get_categories( 'hide_empty=0' );
+	$categories = array();
+	foreach ( $all_categories as $category ) {
+		$categories[$category->cat_ID] = array(
+			'slug' => esc_attr( $category->slug ),
+			'name' => esc_attr( $category->name ),
+		);
+	}
+
 	foreach ( $posts as $post_idx => $post ) {
 		$post_status = 'publish';
 
@@ -52,13 +84,59 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 			}
 		}
 
+		if ( $create_missing_categories ) {
+
+			// TODO: Есть смысл вынести создание несуществующих рубрик до всего цикла обхода постов
+			foreach ( $post->categories as $donor_category_slug => $donor_category_name ) {
+				$should_create_category = true;
+				$acceptor_category_id   = $default_category_id;
+
+				foreach ( $categories as $category_id => $categories_value ) {
+					$category_find = false;
+
+					switch ( $compare_category_by ) {
+						case 'slug':
+							$category_find = $categories_value['slug'] == $donor_category_slug;
+							break;
+
+						case 'name':
+							$category_find = $categories_value['name'] == $donor_category_name;
+							break;
+					}
+
+					if ( $category_find ) {
+						$should_create_category = false;
+						$acceptor_category_id   = $category_id;
+						continue;
+					}
+				}
+
+				if ( $should_create_category ) {
+					$insert_category_result = wp_insert_term( $donor_category_name, 'category', array( 'slug' => $donor_category_slug ) );
+
+					if ( is_wp_error( $insert_category_result ) ) {
+						$post_category = $insert_category_result->error_data['term_exists'];
+					} else {
+						$post_category = $insert_category_result['term_id'];
+					}
+
+					$post_category = array( $post_category );
+				} else {
+					$post_category = array( $acceptor_category_id );
+				}
+			}
+
+		} else {
+			$post_category = array( $default_category_id );
+		}
+
 		// Create post object
 		$new_post = array(
-		  'post_title'    => $post->title,
-		  'post_content'  => $post->content,
-		  'post_status'   => $post_status,
-		  'post_author'   => $author_id,
-		  // 'post_category' => array( 8,39 )
+			'post_title'    => $post->title,
+			'post_content'  => html_entity_decode( $post->content ),
+			'post_status'   => $post_status,
+			'post_author'   => $author_id,
+			'post_category' => $post_category,
 		);
 
 		// Insert the post into the database
