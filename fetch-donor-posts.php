@@ -1,5 +1,6 @@
 #!/usr/bin/php
 <?php
+error_reporting(E_ALL);
 
 define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
 define( 'WP_USE_THEMES', false );
@@ -53,7 +54,7 @@ if ( $donor->have_posts() ) {
 
 		$posts[] = array(
 			'ID'             => get_the_ID(),
-			'title'          => get_the_title(),
+			'title'          => wp_strip_all_tags( get_the_title() ),
 			'content'        => get_the_content(),
 			'date'           => get_the_date('Y.m.d H:i:s'),
 			'featured_image' => $featured_image,
