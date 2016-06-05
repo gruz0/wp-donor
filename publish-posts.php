@@ -12,6 +12,9 @@ $posts   = json_decode( $content );
 foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 	require_once( $acceptor_settings['path'] . 'wp-load.php' );
 
+	// Remove filters to use raw data when inserting the post
+	kses_remove_filters();
+
 	if ( ! empty( $acceptor_settings['allow_duplicate_post_title'] ) ) {
 		$allow_duplicate_post_title = absint( $acceptor_settings['allow_duplicate_post_title'] ) == 1;
 	} else {
