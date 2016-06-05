@@ -4,7 +4,11 @@
 require_once( 'settings.php' );
 
 if ( empty( $settings ) || ! is_array( $settings ) ) {
-	die("Settings are not present!");
+	die( 'Settings are not present!' );
+}
+
+if ( empty( $settings['donor_path'] ) || ! is_dir( $settings['donor_path'] ) || ! is_readable( $settings['donor_path'] ) ) {
+	die( 'donor_path is not present in settings or not exists or not readable' );
 }
 
 include_once( $settings['donor_path'] . 'wp-load.php' );
