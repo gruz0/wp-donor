@@ -1,7 +1,13 @@
 #!/usr/bin/php
 <?php
 
-require_once( 'settings.php' );
+define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
+
+if ( ! file_exists( APP_PATH . 'settings.php' ) || ! is_readable( APP_PATH . 'settings.php' ) ) {
+	die( 'settings.php is not exists or readable' );
+}
+
+require_once( APP_PATH . 'settings.php' );
 
 if ( empty( $settings ) || ! is_array( $settings ) ) {
 	die( 'Settings are not present!' );
@@ -39,7 +45,8 @@ foreach( $settings['acceptors'] as $acceptor_name => $acceptor_values ) {
 	}
 }
 
-include_once( $settings['donor_path'] . 'wp-load.php' );
+define( 'WP_USE_THEMES', false );
+include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 
 // TODO: Получение и добавление категорий
 // TODO: Получение и добавление меток
@@ -62,7 +69,7 @@ $args = array(
 	),
 );
 
-$result = array();
+$posts = array();
 
 $donor = new WP_Query( $args );
 
@@ -76,7 +83,7 @@ if ( $donor->have_posts() ) {
 			$featured_image = esc_url( $large_image_url[0] );
 		}
 
-		$result[] = array(
+		$posts[] = array(
 			'ID'             => get_the_ID(),
 			'title'          => get_the_title(),
 			'content'        => get_the_content(),
@@ -88,5 +95,5 @@ if ( $donor->have_posts() ) {
 	// no posts found
 }
 
-var_dump( $result );
+var_dump( $posts );
 
