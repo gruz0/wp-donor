@@ -25,7 +25,6 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 	}
 
 	foreach ( $posts as $post_idx => $post ) {
-		$continue    = false;
 		$post_status = 'publish';
 
 		if ( ! $allow_duplicate_post_title ) {
@@ -38,21 +37,14 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 
 			$found_posts = $wpdb->get_results( $query );
 
-			if ( count( $found_posts ) == 0 ) {
-				$continue = true;
-
-			} else {
+			if ( count( $found_posts ) ) {
 				if ( $save_duplicate_post_title_to_draft ) {
 					$post_status = 'draft';
-					$continue    = true;
+				} else {
+					continue;
 				}
 			}
-
-		} else {
-			$continue = true;
 		}
-
-		if ( ! $continue ) continue;
 
 		// Create post object
 		$new_post = array(
