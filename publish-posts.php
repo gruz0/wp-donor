@@ -18,21 +18,47 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		$allow_duplicate_post_title = ALLOW_DUPLICATE_POST_TITLE;
 	}
 
+	if ( ! empty( $acceptor_settings['save_duplicate_post_title_to_draft'] ) ) {
+		$save_duplicate_post_title_to_draft = absint( $acceptor_settings['save_duplicate_post_title_to_draft'] ) == 1;
+	} else {
+		$save_duplicate_post_title_to_draft = SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
+	}
+
 	foreach ( $posts as $post_idx => $post ) {
+		$continue    = false;
+		$post_status = 'publish';
 
 		if ( ! $allow_duplicate_post_title ) {
-			$post_by_title = get_page_by_title( $post->title, OBJECT, 'post' );
-			if ( $post_by_title && $post_by_title->post_status == 'publish') {
-				echo "Skip post \"{$post->title}\" from publish because title is not unique...\n";
-				continue;
+			$query = $wpdb->prepare(
+				"SELECT ID, post_title, post_status FROM $wpdb->posts WHERE post_title = %s AND post_type = %s AND post_status = 'publish'",
+				$post->title,
+				'post',
+				OBJECT
+			);
+
+			$found_posts = $wpdb->get_results( $query );
+
+			if ( count( $found_posts ) == 0 ) {
+				$continue = true;
+
+			} else {
+				if ( $save_duplicate_post_title_to_draft ) {
+					$post_status = 'draft';
+					$continue    = true;
+				}
 			}
+
+		} else {
+			$continue = true;
 		}
+
+		if ( ! $continue ) continue;
 
 		// Create post object
 		$new_post = array(
 		  'post_title'    => $post->title,
 		  'post_content'  => $post->content,
-		  'post_status'   => 'publish',
+		  'post_status'   => $post_status,
 		  'post_author'   => 1,
 		  // 'post_category' => array( 8,39 )
 		);
