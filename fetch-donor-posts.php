@@ -67,6 +67,6 @@ if ( count( $posts ) ) {
 	file_put_contents( APP_PATH . 'posts/posts-' . date("Ymd") . '.json', json_encode( $posts ) );
 	exit(0);
 } else {
-	die(1);
+	exit(127);
 }
 
