@@ -52,12 +52,20 @@ if ( $donor->have_posts() ) {
 			$featured_image = esc_url( $large_image_url[0] );
 		}
 
+		$categories = get_the_category();
+		$categories_list = array();
+		foreach ( $categories as $category ) {
+			$categories_list[esc_attr( $category->slug )] = esc_attr( $category->name );
+		}
+		$categories = $categories_list;
+
 		$posts[] = array(
 			'ID'             => get_the_ID(),
 			'title'          => wp_strip_all_tags( get_the_title() ),
 			'content'        => get_the_content(),
 			'date'           => get_the_date('Y.m.d H:i:s'),
 			'featured_image' => $featured_image,
+			'categories'     => $categories,
 		);
 	}
 } else {
