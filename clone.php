@@ -5,6 +5,14 @@ define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
 
 require_once( APP_PATH . 'load-settings.php' );
 
+if ( ! is_dir( APP_PATH . 'posts' ) ) {
+	mkdir( APP_PATH . 'posts', 0700 );
+} else {
+	if ( ! is_readable( APP_PATH . 'posts' ) ) {
+		die( 'Directory posts is not exists or readable' );
+	}
+}
+
 define( 'WP_USE_THEMES', false );
 include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 
