@@ -24,6 +24,12 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		$save_duplicate_post_title_to_draft = SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
 	}
 
+	if ( ! empty( $acceptor_settings['author_id'] ) ) {
+		$author_id = absint( $acceptor_settings['author_id'] );
+	} else {
+		$author_id = DEFAULT_AUTHOR_ID;
+	}
+
 	foreach ( $posts as $post_idx => $post ) {
 		$post_status = 'publish';
 
@@ -51,7 +57,7 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		  'post_title'    => $post->title,
 		  'post_content'  => $post->content,
 		  'post_status'   => $post_status,
-		  'post_author'   => 1,
+		  'post_author'   => $author_id,
 		  // 'post_category' => array( 8,39 )
 		);
 
