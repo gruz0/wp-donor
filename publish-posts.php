@@ -34,18 +34,15 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 
 		if ( ! $acceptor_settings_helper->allow_duplicate_post_title() ) {
 
-			// FIXME: LIMIT 1,1 should be added
 			$query = $wpdb->prepare(
-				"SELECT ID, post_title, post_status FROM $wpdb->posts WHERE post_title = %s AND post_type = %s AND post_status = 'publish'",
+				"SELECT ID, post_title, post_status FROM $wpdb->posts WHERE post_title = %s AND post_type = %s AND post_status = 'publish' LIMIT 1",
 				$post->title,
-				'post',
-				OBJECT
+				'post'
 			);
 
-			// FIXME: Should be replaced by get_row
-			$found_posts = $wpdb->get_results( $query );
+			$posts_found = $wpdb->get_row( $query );
 
-			if ( count( $found_posts ) ) {
+			if ( $posts_found ) {
 				if ( $acceptor_settings_helper->save_duplicate_post_title_to_draft() ) {
 					$post_status = 'draft';
 				} else {
