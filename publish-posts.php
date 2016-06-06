@@ -5,6 +5,7 @@ define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
 define( 'WP_USE_THEMES', false );
 
 require_once( APP_PATH . 'load-settings.php' );
+require_once( APP_PATH . 'acceptor-settings-helper.php' );
 
 $content = file_get_contents( APP_PATH . 'posts/posts-' . date("Ymd") . '.json' );
 $posts   = json_decode( $content );
@@ -14,46 +15,6 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 
 	// Remove filters to use raw data when inserting the post
 	kses_remove_filters();
-
-	if ( ! empty( $acceptor_settings['allow_duplicate_post_title'] ) ) {
-		$allow_duplicate_post_title = absint( $acceptor_settings['allow_duplicate_post_title'] ) == 1;
-	} else {
-		$allow_duplicate_post_title = ALLOW_DUPLICATE_POST_TITLE;
-	}
-
-	if ( ! empty( $acceptor_settings['save_duplicate_post_title_to_draft'] ) ) {
-		$save_duplicate_post_title_to_draft = absint( $acceptor_settings['save_duplicate_post_title_to_draft'] ) == 1;
-	} else {
-		$save_duplicate_post_title_to_draft = SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
-	}
-
-	if ( ! empty( $acceptor_settings['author_id'] ) ) {
-		$author_id = absint( $acceptor_settings['author_id'] );
-	} else {
-		$author_id = DEFAULT_AUTHOR_ID;
-	}
-
-	if ( ! empty( $acceptor_settings['create_missing_categories'] ) ) {
-		$create_missing_categories = absint( $acceptor_settings['create_missing_categories'] ) == 1;
-	} else {
-		$create_missing_categories = CREATE_MISSING_CATEGORIES;
-	}
-
-	if ( ! empty( $acceptor_settings['default_category_id'] ) ) {
-		$default_category_id = absint( $acceptor_settings['default_category_id'] );
-	} else {
-		$default_category_id = DEFAULT_CATEGORY_ID;
-	}
-
-	if ( ! empty( $acceptor_settings['compare_category_by'] ) ) {
-		if ( in_array( esc_attr( $acceptor_settings['compare_category_by'] ), array( 'slug', 'name' ) ) ) {
-			$compare_category_by = esc_attr( $acceptor_settings['compare_category_by'] );
-		} else {
-			$compare_category_by = 'slug';
-		}
-	} else {
-		$compare_category_by = COMPARE_CATEGORY_BY;
-	}
 
 	// Retrieve all categories
 	$all_categories = get_categories( 'hide_empty=0' );
@@ -65,10 +26,15 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		);
 	}
 
+	// Instantiate AcceptorSettingsHelper
+	$acceptor_settings_helper = new AcceptorSettingsHelper( $acceptor_settings );
+
 	foreach ( $posts as $post_idx => $post ) {
 		$post_status = 'publish';
 
-		if ( ! $allow_duplicate_post_title ) {
+		if ( ! $acceptor_settings_helper->allow_duplicate_post_title() ) {
+
+			// FIXME: LIMIT 1,1 should be added
 			$query = $wpdb->prepare(
 				"SELECT ID, post_title, post_status FROM $wpdb->posts WHERE post_title = %s AND post_type = %s AND post_status = 'publish'",
 				$post->title,
@@ -76,10 +42,11 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 				OBJECT
 			);
 
+			// FIXME: Should be replaced by get_row
 			$found_posts = $wpdb->get_results( $query );
 
 			if ( count( $found_posts ) ) {
-				if ( $save_duplicate_post_title_to_draft ) {
+				if ( $acceptor_settings_helper->save_duplicate_post_title_to_draft() ) {
 					$post_status = 'draft';
 				} else {
 					continue;
@@ -87,17 +54,17 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 			}
 		}
 
-		if ( $create_missing_categories ) {
+		if ( $acceptor_settings_helper->create_missing_categories() ) {
 
 			// TODO: Есть смысл вынести создание несуществующих рубрик до всего цикла обхода постов
 			foreach ( $post->categories as $donor_category_slug => $donor_category_name ) {
 				$should_create_category = true;
-				$acceptor_category_id   = $default_category_id;
+				$acceptor_category_id   = $acceptor_settings_helper->default_category_id();
 
 				foreach ( $categories as $category_id => $categories_value ) {
 					$category_find = false;
 
-					switch ( $compare_category_by ) {
+					switch ( $acceptor_settings_helper->compare_category_by() ) {
 						case 'slug':
 							$category_find = $categories_value['slug'] == $donor_category_slug;
 							break;
@@ -130,7 +97,7 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 			}
 
 		} else {
-			$post_category = array( $default_category_id );
+			$post_category = array( $acceptor_settings_helper->default_category_id() );
 		}
 
 		// Create post object
@@ -138,7 +105,7 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 			'post_title'    => $post->title,
 			'post_content'  => html_entity_decode( $post->content ),
 			'post_status'   => $post_status,
-			'post_author'   => $author_id,
+			'post_author'   => $acceptor_settings_helper->author_id(),
 			'post_category' => $post_category,
 		);
 
