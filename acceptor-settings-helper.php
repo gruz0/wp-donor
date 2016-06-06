@@ -6,7 +6,8 @@
  * @since 0.1
  */
 class AcceptorSettingsHelper {
-	private $_settings;
+	private $_settings = array();
+	private $_saved_settings = array();
 
 	/**
 	 * Contructor
@@ -26,11 +27,17 @@ class AcceptorSettingsHelper {
 	 * @return integer
 	 */
 	function allow_duplicate_post_title() {
-		if ( isset( $this->_settings['allow_duplicate_post_title'] ) ) {
-			return absint( $this->_settings['allow_duplicate_post_title'] ) == 1;
-		} else {
-			return ALLOW_DUPLICATE_POST_TITLE;
+		if ( ! isset( $this->_saved_settings['allow_duplicate_post_title'] ) ) {
+			if ( isset( $this->_settings['allow_duplicate_post_title'] ) ) {
+				$value = absint( $this->_settings['allow_duplicate_post_title'] ) == 1;
+			} else {
+				$value = ALLOW_DUPLICATE_POST_TITLE;
+			}
+
+			$this->_saved_settings['allow_duplicate_post_title'] = $value;
 		}
+
+		return $this->_saved_settings['allow_duplicate_post_title'];
 	}
 
 	/**
@@ -40,11 +47,17 @@ class AcceptorSettingsHelper {
 	 * @return integer
 	 */
 	function save_duplicate_post_title_to_draft() {
-		if ( isset( $this->_settings['save_duplicate_post_title_to_draft'] ) ) {
-			return absint( $this->_settings['save_duplicate_post_title_to_draft'] ) == 1;
-		} else {
-			return SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
+		if ( ! isset( $this->_saved_settings['save_duplicate_post_title_to_draft'] ) ) {
+			if ( isset( $this->_settings['save_duplicate_post_title_to_draft'] ) ) {
+				$value = absint( $this->_settings['save_duplicate_post_title_to_draft'] ) == 1;
+			} else {
+				$value = SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
+			}
+
+			$this->_saved_settings['save_duplicate_post_title_to_draft'] = $value;
 		}
+
+		return $this->_saved_settings['save_duplicate_post_title_to_draft'];
 	}
 
 	/**
@@ -54,11 +67,17 @@ class AcceptorSettingsHelper {
 	 * @return integer
 	 */
 	function author_id() {
-		if ( isset( $this->_settings['author_id'] ) ) {
-			return absint( $this->_settings['author_id'] );
-		} else {
-			return DEFAULT_AUTHOR_ID;
+		if ( ! isset( $this->_saved_settings['author_id'] ) ) {
+			if ( isset( $this->_settings['author_id'] ) ) {
+				$value = absint( $this->_settings['author_id'] );
+			} else {
+				$value = DEFAULT_AUTHOR_ID;
+			}
+
+			$this->_saved_settings['author_id'] = $value;
 		}
+
+		return $this->_saved_settings['author_id'];
 	}
 
 	/**
@@ -68,11 +87,17 @@ class AcceptorSettingsHelper {
 	 * @return integer
 	 */
 	function create_missing_categories() {
-		if ( isset( $this->_settings['create_missing_categories'] ) ) {
-			return absint( $this->_settings['create_missing_categories'] ) == 1;
-		} else {
-			return CREATE_MISSING_CATEGORIES;
+		if ( ! isset( $this->_saved_settings['create_missing_categories'] ) ) {
+			if ( isset( $this->_settings['create_missing_categories'] ) ) {
+				$value = absint( $this->_settings['create_missing_categories'] ) == 1;
+			} else {
+				$value = CREATE_MISSING_CATEGORIES;
+			}
+
+			$this->_saved_settings['create_missing_categories'] = $value;
 		}
+
+		return $this->_saved_settings['create_missing_categories'];
 	}
 
 	/**
@@ -82,11 +107,17 @@ class AcceptorSettingsHelper {
 	 * @return integer
 	 */
 	function default_category_id() {
-		if ( isset( $this->_settings['default_category_id'] ) ) {
-			return absint( $this->_settings['default_category_id'] );
-		} else {
-			return DEFAULT_CATEGORY_ID;
+		if ( ! isset( $this->_saved_settings['default_category_id'] ) ) {
+			if ( isset( $this->_settings['default_category_id'] ) ) {
+				$value = absint( $this->_settings['default_category_id'] );
+			} else {
+				$value = DEFAULT_CATEGORY_ID;
+			}
+
+			$this->_saved_settings['default_category_id'] = $value;
 		}
+
+		return $this->_saved_settings['default_category_id'];
 	}
 
 	/**
@@ -96,15 +127,21 @@ class AcceptorSettingsHelper {
 	 * @return string
 	 */
 	function compare_category_by() {
-		if ( isset( $this->_settings['compare_category_by'] ) ) {
-			if ( in_array( esc_attr( $this->_settings['compare_category_by'] ), array( 'slug', 'name' ) ) ) {
-				return esc_attr( $this->_settings['compare_category_by'] );
+		if ( ! isset( $this->_saved_settings['compare_category_by'] ) ) {
+			if ( isset( $this->_settings['compare_category_by'] ) ) {
+				if ( in_array( esc_attr( $this->_settings['compare_category_by'] ), array( 'slug', 'name' ) ) ) {
+					$value = esc_attr( $this->_settings['compare_category_by'] );
+				} else {
+					$value = 'slug';
+				}
 			} else {
-				return 'slug';
+				$value = COMPARE_CATEGORY_BY;
 			}
-		} else {
-			return COMPARE_CATEGORY_BY;
+
+			$this->_saved_settings['compare_category_by'] = $value;
 		}
+
+		return $this->_saved_settings['compare_category_by'];
 	}
 }
 
