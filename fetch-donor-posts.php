@@ -39,6 +39,7 @@ $args = array(
 );
 
 $posts = array();
+$posts_dates = array();
 
 $donor = new WP_Query( $args );
 
@@ -59,21 +60,30 @@ if ( $donor->have_posts() ) {
 		}
 		$categories = $categories_list;
 
+		$post_date = get_the_date( 'Y.m.d H:i:s' );
+
 		$posts[] = array(
 			'ID'             => get_the_ID(),
 			'title'          => wp_strip_all_tags( get_the_title() ),
 			'content'        => get_the_content(),
-			'date'           => get_the_date('Y.m.d H:i:s'),
+			'date'           => $post_date,
 			'featured_image' => $featured_image,
 			'categories'     => $categories,
 		);
+
+		$posts_dates[] = $post_date;
 	}
 } else {
 	// no posts found
 }
 
+// Store newer post date
+arsort( $posts_dates );
+$newer_post_date = array_shift( $posts_dates );
+
 if ( count( $posts ) ) {
 	file_put_contents( APP_PATH . 'posts/posts-' . date("Ymd") . '.json', json_encode( $posts ) );
+	file_put_contents( APP_PATH . 'posts/newer_post_date.txt', $newer_post_date );
 	exit(0);
 } else {
 	exit(127);
