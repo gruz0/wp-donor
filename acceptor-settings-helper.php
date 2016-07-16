@@ -143,6 +143,19 @@ class AcceptorSettingsHelper {
 
 		return $this->_saved_settings['compare_category_by'];
 	}
-}
 
+	/**
+	 * Returns 'start_from' or predefined value if it's not present
+	 *
+	 * @since 0.1
+	 * @return string
+	 */
+	function start_from() {
+		if ( ! isset( $this->_saved_settings['start_from'] ) ) {
+			$this->_saved_settings['start_from'] = $this->_settings['start_from'];
+		}
+
+		return $this->_saved_settings['start_from'];
+	}
+}
 

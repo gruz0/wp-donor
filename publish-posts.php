@@ -33,7 +33,15 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		create_missing_categories( & $posts, $categories, $acceptor_settings_helper );
 	}
 
+	$errors          = array();
+	$published_posts = array();
+
 	foreach ( $posts as $post_idx => $post ) {
+		if ( $post->date < $acceptor_settings_helper->start_from() ) {
+			$errors[] = "Skip the post #{$post->ID} \"{$post->title}\" because it has the date lower than {$acceptor_settings_helper->start_from()}";
+			continue;
+		}
+
 		$post_status = 'publish';
 
 		if ( ! $acceptor_settings_helper->allow_duplicate_post_title() ) {
@@ -71,6 +79,8 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 
 		// Insert the post into the database
 		wp_insert_post( $new_post );
+
+		$published_posts[] = array( 'ID' => $post->ID, 'title' => $post->title );
 	}
 }
 
