@@ -33,20 +33,45 @@ foreach( $settings['acceptors'] as $acceptor_name => $acceptor_values ) {
 		die(1);
 	}
 
-	foreach( $acceptor_values as $key => $value ) {
+	foreach( $acceptor_values as $key => & $value ) {
 		if ( ! is_string( $key ) ) {
 			echo 'acceptor key is not present a string';
 			die(1);
 		}
 
 		switch ( $key ) {
-			case 'path':
+			case 'path': {
 				if ( empty( $value ) || ! is_dir( $value ) || ! is_readable( $value ) ) {
 					echo 'acceptor path is not present or not exists or not readable';
 					die(1);
 				}
 				break;
+			}
+
+			case 'start_from': {
+				if ( empty( $value ) ) {
+					echo 'acceptor start_from is empty';
+					die(1);
+				}
+
+				if ( DateTime::createFromFormat( 'Y.m.d', $value ) ) {
+					$value .= ' 00:00:00';
+
+				} elseif ( DateTime::createFromFormat( 'Y.m.d H:i:s', $value ) ) {
+
+				} else {
+					echo 'acceptor start_from has not a valid format. Use "Y.m.d H:i:s"';
+					die(1);
+				}
+
+				break;
+			}
 		}
+	}
+
+	// If start_from does not present then we use default value '1970.01.01 00:00:00'
+	if ( empty( $acceptor_values['start_from'] ) ) {
+		$acceptor_values['start_from'] = '1970.01.01 00:00:00';
 	}
 }
 
