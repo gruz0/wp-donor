@@ -1,13 +1,26 @@
 <?php
 
 /**
- * Stores last import date
+ * Load newer post date from file
  *
  * @since 0.1
  * @return void
  */
-function save_last_import_date() {
-	$last_import_date = date("Y.m.d H:i:s");
+function load_newer_post_date_from_file() {
+	if ( file_exists( NEWER_POST_DATE_FILE_PATH ) && is_readable( NEWER_POST_DATE_FILE_PATH ) ) {
+		return trim( file_get_contents( NEWER_POST_DATE_FILE_PATH ) );
+	} else {
+		echo "File \"" . NEWER_POST_DATE_FILE_PATH . "\" does not exist or not readable!\n";
+		echo "Try to create it...\n";
+
+		try {
+			file_put_contents( NEWER_POST_DATE_FILE_PATH, DEFAULT_DATE_TIME );
+			return DEFAULT_DATE_TIME;
+		} catch (Exception $e) {
+			echo "Can't create file \"". NEWER_POST_DATE_FILE_PATH . "\"!\n";
+			exit(127);
+		}
+	}
 }
 
 /**

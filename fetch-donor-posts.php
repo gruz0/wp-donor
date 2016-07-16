@@ -4,8 +4,11 @@ error_reporting(E_ALL);
 
 define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
 define( 'WP_USE_THEMES', false );
+define( 'DEFAULT_DATE_TIME', '1970.01.01 00:00:00' );
+define( 'NEWER_POST_DATE_FILE_PATH', APP_PATH . 'posts/newer_post_date.txt' );
 
 require_once( APP_PATH . 'load-settings.php' );
+require_once( APP_PATH . 'functions.php' );
 
 if ( ! is_dir( APP_PATH . 'posts' ) ) {
 	mkdir( APP_PATH . 'posts', 0700 );
@@ -21,9 +24,9 @@ include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 // TODO: Получение и добавление меток
 // TODO: Загрузка изображений и featured image
 
-$year  = 2016; // intval(date("Y"));
-$month = 5;    // intval(date("m"));
-$day   = 30;   // intval(date("d"));
+$newer_post_date_from_file = load_newer_post_date_from_file();
+
+$date_parts = DateTime::createFromFormat( 'Y.m.d H:i:s', $newer_post_date_from_file );
 
 $args = array(
 	'post_type'  => 'post',
@@ -31,11 +34,15 @@ $args = array(
 	'order'      => 'ASC',
 	'date_query' => array(
 		array(
-			'year'  => $year,
-			'month' => $month,
-			'day'   => $day,
+			array( 'year'   => (int) $date_parts->format( 'Y' ), 'compare' => '>' ),
+			array( 'month'  => (int) $date_parts->format( 'm' ), 'compare' => '>' ),
+			array( 'day'    => (int) $date_parts->format( 'd' ), 'compare' => '>' ),
+			array( 'hour'   => (int) $date_parts->format( 'H' ), 'compare' => '>' ),
+			array( 'minute' => (int) $date_parts->format( 'i' ), 'compare' => '>' ),
+			array( 'second' => (int) $date_parts->format( 's' ), 'compare' => '>' ),
 		),
 	),
+	'posts_per_page' => -1,
 );
 
 $posts = array();
@@ -77,13 +84,17 @@ if ( $donor->have_posts() ) {
 	// no posts found
 }
 
-// Store newer post date
-arsort( $posts_dates );
-$newer_post_date = array_shift( $posts_dates );
+// Store newer post date or use previous post date from file if posts not found
+if ( count( $posts_dates ) ) {
+	arsort( $posts_dates );
+	$newer_post_date = array_shift( $posts_dates );
+} else {
+	$newer_post_date = $newer_post_date_from_file;
+}
 
 if ( count( $posts ) ) {
 	file_put_contents( APP_PATH . 'posts/posts-' . date("Ymd") . '.json', json_encode( $posts ) );
-	file_put_contents( APP_PATH . 'posts/newer_post_date.txt', $newer_post_date );
+	file_put_contents( NEWER_POST_DATE_FILE_PATH, $newer_post_date );
 	exit(0);
 } else {
 	exit(127);
