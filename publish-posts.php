@@ -78,8 +78,18 @@ foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 			'post_category' => $post_category,
 		);
 
+		echo "Publishing post #{$post->ID} \"{$post->title}\"... ";
+
 		// Insert the post into the database
-		wp_insert_post( $new_post );
+		// True in last param used in WP_Error to return error description
+		$result = wp_insert_post( $new_post, true );
+
+		if ( is_wp_error( $result ) ) {
+			echo "Failed!\n";
+			$errors[] = "Error occured when posting #{$post->ID} \"{$post->title}\": {$result->get_error_message()}";
+		} else {
+			echo "Done! New ID: #{$result}\n";
+		}
 
 		$published_posts[] = array( 'ID' => $post->ID, 'title' => $post->title );
 	}
