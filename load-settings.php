@@ -32,6 +32,8 @@ if ( ! empty( $settings['first_run'] ) && $settings['first_run'] ) {
 		echo 'donor_start_from has not a valid format. Use "Y.m.d H:i:s"';
 		die(1);
 	}
+} else {
+	$settings['first_run'] = false;
 }
 
 if ( empty( $settings['acceptors'] ) || ! is_array( $settings['acceptors'] ) || count( $settings['acceptors'] ) == 0 ) {
