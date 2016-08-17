@@ -17,6 +17,23 @@ if ( empty( $settings['donor_path'] ) || ! is_dir( $settings['donor_path'] ) || 
 	die(1);
 }
 
+if ( ! empty( $settings['first_run'] ) && $settings['first_run'] ) {
+	if ( empty( $settings['donor_start_from'] ) ) {
+		echo 'donor_start_from is not present in settings';
+		die(1);
+	}
+
+	if ( DateTime::createFromFormat( 'Y.m.d', $settings['donor_start_from'] ) ) {
+		$settings['donor_start_from'] .= ' 00:00:00';
+
+	} elseif ( DateTime::createFromFormat( 'Y.m.d H:i:s', $settings['donor_start_from'] ) ) {
+
+	} else {
+		echo 'donor_start_from has not a valid format. Use "Y.m.d H:i:s"';
+		die(1);
+	}
+}
+
 if ( empty( $settings['acceptors'] ) || ! is_array( $settings['acceptors'] ) || count( $settings['acceptors'] ) == 0 ) {
 	echo 'acceptors are not present in settings or not an array';
 	die(1);
