@@ -82,8 +82,9 @@ function create_missing_categories( $posts, $categories, $acceptor_settings_help
 }
 
 function get_files() {
-	$dir = APP_PATH . 'posts';
-	$dh  = opendir($dir);
+	$dir   = APP_PATH . 'posts';
+	$dh    = opendir($dir);
+	$files = array();
 
 	while ( false !== ( $filename = readdir( $dh ) ) ) {
 		if ( $filename == '.' || $filename == '..' || strpos( $filename, 'posts-' . date("Ymd") ) === FALSE ) {
