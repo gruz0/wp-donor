@@ -21,6 +21,11 @@ for ( $idx = 0; $idx < count( $files ); $idx++ ) {
 	foreach( $settings['acceptors'] as $acceptor_sitename => $acceptor_settings ) {
 		require_once( $acceptor_settings['path'] . 'wp-load.php' );
 
+		// Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
+		require_once( $acceptor_settings['path'] . 'wp-admin/includes/image.php' );
+
+		$wp_upload_dir = wp_upload_dir();
+
 		// Remove filters to use raw data when inserting the post
 		kses_remove_filters();
 
@@ -101,13 +106,30 @@ for ( $idx = 0; $idx < count( $files ); $idx++ ) {
 				$errors[] = "Error occured when posting #{$post->ID} \"{$post->title}\": {$result->get_error_message()}";
 				var_dump ( $new_post );
 			} else {
-				echo "Done! New ID: #{$result}\n";
+				$new_post_id = $result;
+
+				echo "Done! New ID: #{$new_post_id}\n";
+
+				// Try to insert featured image
+				if ( $acceptor_settings_helper->use_featured_images() ) {
+					echo "Uploading featured image... ";
+
+					if ( empty( $post->featured_image ) && $acceptor_settings_helper->skip_featured_image_if_empty() ) {
+						echo "Skip because it empty!\n\n";
+					} else {
+						$result = insert_featured_image( $post->featured_image, $new_post_id, $post->title, $wp_upload_dir, & $wpdb );
+						if ( $result ) {
+							echo "Done!\n\n";
+						} else {
+							echo "Failed!\n\n";
+						}
+					}
+				}
 			}
 
 			$posts_processed++;
 
 			if ( $posts_processed % 25 == 0 || ( $post_idx == ( $posts_count - 1 ) ) ) {
-				echo "\n";
 				echo date_with_timezone("Y-m-d H:i:s") . " – Processed {$posts_processed} posts from file {$files[$idx]}. Sleeping...\n";
 				sleep(2);
 			}
