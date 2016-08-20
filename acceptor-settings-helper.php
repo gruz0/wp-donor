@@ -157,5 +157,25 @@ class AcceptorSettingsHelper {
 
 		return $this->_saved_settings['start_from'];
 	}
+
+	/**
+	 * Returns 'use_featured_images' or predefined value if it's not present
+	 *
+	 * @since 0.1
+	 * @return integer
+	 */
+	function use_featured_images() {
+		if ( ! isset( $this->_saved_settings['use_featured_images'] ) ) {
+			if ( isset( $this->_settings['use_featured_images'] ) ) {
+				$value = absint( $this->_settings['use_featured_images'] );
+			} else {
+				$value = USE_FEATURED_IMAGES;
+			}
+
+			$this->_saved_settings['use_featured_images'] = $value;
+		}
+
+		return $this->_saved_settings['use_featured_images'];
+	}
 }
 
