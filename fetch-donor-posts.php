@@ -10,6 +10,9 @@ define( 'NEWER_POST_DATE_FILE_PATH', APP_PATH . 'posts/newer_post_date.txt' );
 require_once( APP_PATH . 'load-settings.php' );
 require_once( APP_PATH . 'functions.php' );
 
+require_once( APP_PATH . 'lib/Encoding.php' );
+use \ForceUTF8\Encoding;
+
 if ( ! is_dir( APP_PATH . 'posts' ) ) {
 	mkdir( APP_PATH . 'posts', 0700 );
 } else {
@@ -21,7 +24,7 @@ if ( ! is_dir( APP_PATH . 'posts' ) ) {
 include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 
 // Remove previous files from current date
-array_map( 'unlink', glob( "posts/posts-" . date("Ymd") . "*.json" ) );
+array_map( 'unlink', glob( "posts/posts-" . date_with_timezone("Ymd") . "*.json" ) );
 
 // TODO: Получение и добавление меток
 // TODO: Загрузка изображений
@@ -88,21 +91,37 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 			$categories = get_the_category();
 			$categories_list = array();
 			foreach ( $categories as $category ) {
-				$categories_list[esc_attr( $category->slug )] = base64_encode( esc_attr( $category->name ) );
+				$categories_list[esc_attr( $category->slug )] = Encoding::fixUTF8( esc_attr( $category->name ) );
 			}
 			$categories = $categories_list;
 
 			// Формируем массив постов для сохранения в виде JSON
-			$post_id    = get_the_ID();
-			$post_title = get_the_title();
-			$post_date  = get_the_date( 'Y.m.d H:i:s' );
+			$post_id      = get_the_ID();
+			$post_title   = get_the_title();
+			$post_content = get_the_content();
+			$post_date    = get_the_date( 'Y.m.d H:i:s' );
+
+			// Проверяем название записи на содержание кривых символов
+			if ( ! mb_check_encoding( $post_title, 'UTF-8') ) {
+				$post_title = Encoding::fixUTF8($post_title);
+			}
+
+			// Проверяем название записи на содержание кривых символов
+			if ( ! mb_check_encoding( $post_content, 'UTF-8') ) {
+				$post_content = Encoding::fixUTF8( $post_content );
+			}
+
+			// Проверяем миниатюру записи на содержание кривых символов
+			if ( ! mb_check_encoding($featured_image, 'UTF-8') ) {
+				$featured_image = '';
+			}
 
 			$posts[] = array(
 				'ID'             => $post_id,
-				'title'          => base64_encode( $post_title ),
-				'content'        => base64_encode( get_the_content() ),
+				'title'          => $post_title,
+				'content'        => $post_content,
 				'date'           => $post_date,
-				'featured_image' => base64_encode( $featured_image ),
+				'featured_image' => $featured_image,
 				'categories'     => $categories,
 			);
 
@@ -113,7 +132,7 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 		}
 
 		if ( count( $posts ) == 50 || ( $idx == ( $pages_count - 1 ) ) ) {
-			file_put_contents( APP_PATH . 'posts/posts-' . date("Ymd") . '-' . sprintf( "%03d", ++$page_number ) . '.json', json_encode( $posts ) );
+			file_put_contents( APP_PATH . 'posts/posts-' . date_with_timezone("Ymd") . '-' . sprintf( "%03d", ++$page_number ) . '.json', json_encode( $posts ) );
 
 			// Store newer post date
 			arsort( $temp_posts_dates );
