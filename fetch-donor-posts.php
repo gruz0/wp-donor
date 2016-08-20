@@ -76,6 +76,10 @@ if ( ( $count_posts % $posts_per_page ) > 0 ) {
 for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 	$donor = new WP_Query( $args );
 
+	$domain         = get_site_url();
+	$wp_upload_dir  = wp_upload_dir();
+	$wp_upload_dir  = str_replace( '/wp-content/uploads', '', $wp_upload_dir['basedir'] );
+
 	if ( $donor->have_posts() ) {
 		while ( $donor->have_posts() ) {
 			$donor->the_post();
@@ -84,9 +88,6 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 			$featured_image  = '';
 			$large_image_url = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
 			if ( ! empty( $large_image_url[0] ) ) {
-				$domain         = get_site_url();
-				$wp_upload_dir  = wp_upload_dir();
-				$wp_upload_dir  = str_replace( '/wp-content/uploads', '', $wp_upload_dir['basedir'] );
 				$featured_image = $wp_upload_dir . str_replace( $domain, '', $large_image_url[0] );
 			}
 
