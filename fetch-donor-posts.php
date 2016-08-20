@@ -81,10 +81,13 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 			$donor->the_post();
 
 			// Загружаем миниатюру записи
-			$featured_image = '';
+			$featured_image  = '';
 			$large_image_url = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
 			if ( ! empty( $large_image_url[0] ) ) {
-				$featured_image = esc_url( $large_image_url[0] );
+				$domain         = get_site_url();
+				$wp_upload_dir  = wp_upload_dir();
+				$wp_upload_dir  = str_replace( '/wp-content/uploads', '', $wp_upload_dir['basedir'] );
+				$featured_image = $wp_upload_dir . str_replace( $domain, '', $large_image_url[0] );
 			}
 
 			// Загружаем рубрики
