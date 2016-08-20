@@ -89,6 +89,9 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 			$large_image_url = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
 			if ( ! empty( $large_image_url[0] ) ) {
 				$featured_image = $wp_upload_dir . str_replace( $domain, '', $large_image_url[0] );
+				if ( ! file_exists( $featured_image ) ) {
+					$featured_image = '';
+				}
 			}
 
 			// Загружаем рубрики
