@@ -114,3 +114,58 @@ function date_with_timezone( $format ) {
 	return $dt->format( $format );
 }
 
+/**
+ * Insert featured image to post
+ *
+ * @param string $featured_image_path
+ * @param int $post_id
+ * @param string $post_title
+ * @param array $wp_upload_dir
+ * @param object $wpdb
+ * @return void
+ */
+function insert_featured_image( $featured_image_path, $post_id, $post_title, $wp_upload_dir, $wpdb ) {
+	// Получаем пользователя и группу wp-config.php для установки их на загружаемый файл
+	$wp_config_path = str_replace( 'wp-content/uploads', '', $wp_upload_dir['basedir'] ) . 'wp-config.php';
+	$stat           = stat( $wp_config_path );
+
+	$file_basename = basename( $featured_image_path );
+	$new_file_path = $wp_upload_dir['path'] . DIRECTORY_SEPARATOR . $file_basename;
+
+	if ( file_exists( $new_file_path ) ) {
+		// Получение attach id
+		$attachment = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $wp_upload_dir['url'] . '/' . $file_basename ) );
+		$attach_id = $attachment[0];
+
+	} else {
+		if ( ! copy( $featured_image_path, $new_file_path ) ) {
+			echo "failed to copy $featured_image_path to $new_file_path...\n";
+		}
+
+		chmod( $new_file_path, 0755 ) or die( "Can't execute chmod on $new_file_path" );
+		chown( $new_file_path, $stat['uid'] ) or die( "Can't execute chown on $new_file_path" );
+		chgrp( $new_file_path, $stat['gid'] ) or die( "Can't execute chgrp on $new_file_path" );
+
+		// Check the type of file. We'll use this as the 'post_mime_type'.
+		$filetype = wp_check_filetype( basename( $new_file_path ), null );
+
+		// Prepare an array of post data for the attachment.
+		$attachment = array(
+			'guid'           => $wp_upload_dir['url'] . '/' . basename( $new_file_path ),
+			'post_mime_type' => $filetype['type'],
+			'post_title'     => $post_title,
+			'post_content'   => '',
+			'post_status'    => 'inherit'
+		);
+
+		// Insert the attachment.
+		$attach_id = wp_insert_attachment( $attachment, $new_file_path, $post_id );
+
+		// Generate the metadata for the attachment, and update the database record.
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $new_file_path );
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+	}
+
+	return set_post_thumbnail( $post_id, $attach_id );
+}
+
