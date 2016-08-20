@@ -87,7 +87,7 @@ function get_files() {
 	$files = array();
 
 	while ( false !== ( $filename = readdir( $dh ) ) ) {
-		if ( $filename == '.' || $filename == '..' || strpos( $filename, 'posts-' . date("Ymd") ) === FALSE ) {
+		if ( $filename == '.' || $filename == '..' || strpos( $filename, 'posts-' . date_with_timezone("Ymd") ) === FALSE ) {
 			continue;
 		}
 
@@ -97,5 +97,20 @@ function get_files() {
 	sort($files);
 
 	return $files;
+}
+
+/**
+ * Returns date with timezone
+ *
+ * @param string $format
+ * @return string
+ */
+function date_with_timezone( $format ) {
+	$tz        = 'Europe/Moscow';
+	$timestamp = time();
+	$dt        = new DateTime( "now", new DateTimeZone( $tz ) );
+	$dt->setTimestamp( $timestamp );
+
+	return $dt->format( $format );
 }
 
