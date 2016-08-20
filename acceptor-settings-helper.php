@@ -177,5 +177,25 @@ class AcceptorSettingsHelper {
 
 		return $this->_saved_settings['use_featured_images'];
 	}
+
+	/**
+	 * Returns 'skip_featured_image_if_empty' or predefined value if it's not present
+	 *
+	 * @since 0.1
+	 * @return integer
+	 */
+	function skip_featured_image_if_empty() {
+		if ( ! isset( $this->_saved_settings['skip_featured_image_if_empty'] ) ) {
+			if ( isset( $this->_settings['skip_featured_image_if_empty'] ) ) {
+				$value = absint( $this->_settings['skip_featured_image_if_empty'] );
+			} else {
+				$value = SKIP_FEATURED_IMAGE_IF_EMPTY;
+			}
+
+			$this->_saved_settings['skip_featured_image_if_empty'] = $value;
+		}
+
+		return $this->_saved_settings['skip_featured_image_if_empty'];
+	}
 }
 
