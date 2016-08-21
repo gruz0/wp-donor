@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<ruleset name="WP-Donor Project">
+    <description>A custom set of rules to check for a WPized WordPress project</description>
+
+    <rule ref="WordPress-Core">
+		<exclude name="Generic.PHP.ForbiddenFunctions" />
+		<exclude name="WordPress.DB.RestrictedFunctions" />
+    </rule>
+
+    <rule ref="WordPress-Docs">
+		<exclude name="Squiz.Commenting.BlockComment.NoEmptyLineAfter" />
+		<exclude name="Squiz.Commenting.InlineComment.SpacingAfter" />
+		<exclude name="Squiz.Commenting.FileComment.WrongStyle" />
+    </rule>
+
+    <rule ref="WordPress-VIP">
+		<exclude name="WordPress.VIP.FileSystemWritesDisallow.FileWriteDetected" />
+		<exclude name="WordPress.XSS.EscapeOutput.OutputNotEscaped" />
+		<exclude name="WordPress.VIP.RestrictedFunctions.error_log" />
+		<exclude name="WordPress.VIP.RestrictedFunctions.prevent_path_disclosure" />
+		<exclude name="WordPress.VIP.RestrictedFunctions.runtime_configuration" />
+		<exclude name="WordPress.VIP.RestrictedFunctions.file_get_contents" />
+		<exclude name="WordPress.VIP.DirectDatabaseQuery.DirectQuery" />
+		<exclude name="WordPress.VIP.DirectDatabaseQuery.NoCaching" />
+    </rule>
+</ruleset>
