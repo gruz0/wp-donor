@@ -68,13 +68,11 @@ for ( $idx = 0; $idx < count( $files ); $idx++ ) {
 			$post_status = 'publish';
 
 			if ( ! $acceptor_settings_helper->allow_duplicate_post_title() ) {
-				$query = $wpdb->prepare(
+				$posts_found = $wpdb->get_row( $wpdb->prepare(
 					"SELECT ID, post_title, post_status FROM $wpdb->posts WHERE post_title = %s AND post_type = %s AND post_status = 'publish' LIMIT 1",
 					$post->title,
 					'post'
-				);
-
-				$posts_found = $wpdb->get_row( $query );
+				) );
 
 				if ( $posts_found ) {
 					if ( $acceptor_settings_helper->save_duplicate_post_title_to_draft() ) {
@@ -113,7 +111,7 @@ for ( $idx = 0; $idx < count( $files ); $idx++ ) {
 			if ( is_wp_error( $result ) ) {
 				echo "Failed!\n";
 				$errors[] = "Error occured when posting #{$post->ID} \"{$post->title}\": {$result->get_error_message()}";
-				var_dump ( $new_post );
+				var_dump( $new_post );
 			} else {
 				$new_post_id = $result;
 
