@@ -1,6 +1,15 @@
 #!/usr/bin/php
 <?php
-error_reporting(E_ALL);
+/**
+ * Fetch donor posts
+ *
+ * @package  WP_Donor
+ * @author   Alexander Gruzov
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
+ * @link     https://github.com/gruz0/wp-donor
+ */
+
+error_reporting( E_ALL );
 
 define( 'APP_PATH', dirname( __FILE__ ) . DIRECTORY_SEPARATOR );
 define( 'WP_USE_THEMES', false );
@@ -23,13 +32,12 @@ if ( ! is_dir( APP_PATH . 'posts' ) ) {
 
 include_once( $settings['donor_path'] . 'wp-blog-header.php' );
 
-// Remove previous files from current date
-array_map( 'unlink', glob( "posts/posts-" . date_with_timezone("Ymd") . "*.json" ) );
+// Remove previous files from current date.
+array_map( 'unlink', glob( 'posts/posts-' . date_with_timezone( 'Ymd' ) . '*.json' ) );
 
-// TODO: Получение и добавление меток
-// TODO: Загрузка изображений
-
-// TODO: Здесь надо бы добавить выборку максимального количества постов из настроек WP
+// TODO: Получение и добавление меток.
+// TODO: Загрузка изображений.
+// TODO: Здесь надо бы добавить выборку максимального количества постов из настроек WP.
 $posts_per_page = 50;
 
 if ( $settings['first_run'] ) {
@@ -45,10 +53,10 @@ $args = array(
 	'order'      => 'ASC',
 	'date_query' => array(
 		array(
-			array( 'year'   => (int) $date_parts->format( 'Y' ), 'compare' => '>=' ),
-			array( 'month'  => (int) $date_parts->format( 'm' ), 'compare' => '>=' ),
-			array( 'day'    => (int) $date_parts->format( 'd' ), 'compare' => '>=' ),
-			array( 'hour'   => (int) $date_parts->format( 'H' ), 'compare' => '>=' ),
+			array( 'year' => (int) $date_parts->format( 'Y' ), 'compare' => '>=' ),
+			array( 'month' => (int) $date_parts->format( 'm' ), 'compare' => '>=' ),
+			array( 'day' => (int) $date_parts->format( 'd' ), 'compare' => '>=' ),
+			array( 'hour' => (int) $date_parts->format( 'H' ), 'compare' => '>=' ),
 			array( 'minute' => (int) $date_parts->format( 'i' ), 'compare' => '>=' ),
 			array( 'second' => (int) $date_parts->format( 's' ), 'compare' => '>=' ),
 		),
@@ -84,7 +92,7 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 		while ( $donor->have_posts() ) {
 			$donor->the_post();
 
-			// Загружаем миниатюру записи
+			// Загружаем миниатюру записи.
 			$featured_image  = '';
 			$large_image_url = wp_get_attachment_image_src( get_post_thumbnail_id(), 'large' );
 			if ( ! empty( $large_image_url[0] ) ) {
@@ -94,32 +102,32 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 				}
 			}
 
-			// Загружаем рубрики
+			// Загружаем рубрики.
 			$categories = get_the_category();
 			$categories_list = array();
 			foreach ( $categories as $category ) {
-				$categories_list[esc_attr( $category->slug )] = Encoding::fixUTF8( esc_attr( $category->name ) );
+				$categories_list[ esc_attr( $category->slug ) ] = Encoding::fixUTF8( esc_attr( $category->name ) );
 			}
 			$categories = $categories_list;
 
-			// Формируем массив постов для сохранения в виде JSON
+			// Формируем массив постов для сохранения в виде JSON.
 			$post_id      = get_the_ID();
 			$post_title   = get_the_title();
 			$post_content = get_the_content();
 			$post_date    = get_the_date( 'Y.m.d H:i:s' );
 
-			// Проверяем название записи на содержание кривых символов
-			if ( ! mb_check_encoding( $post_title, 'UTF-8') ) {
-				$post_title = Encoding::fixUTF8($post_title);
+			// Проверяем название записи на содержание кривых символов.
+			if ( ! mb_check_encoding( $post_title, 'UTF-8' ) ) {
+				$post_title = Encoding::fixUTF8( $post_title );
 			}
 
-			// Проверяем название записи на содержание кривых символов
-			if ( ! mb_check_encoding( $post_content, 'UTF-8') ) {
+			// Проверяем название записи на содержание кривых символов.
+			if ( ! mb_check_encoding( $post_content, 'UTF-8' ) ) {
 				$post_content = Encoding::fixUTF8( $post_content );
 			}
 
-			// Проверяем миниатюру записи на содержание кривых символов
-			if ( ! mb_check_encoding($featured_image, 'UTF-8') ) {
+			// Проверяем миниатюру записи на содержание кривых символов.
+			if ( ! mb_check_encoding( $featured_image, 'UTF-8' ) ) {
 				$featured_image = '';
 			}
 
@@ -132,16 +140,19 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 				'categories'     => $categories,
 			);
 
-			echo "Post #{$post_id} \"{$post_title}\" processed – {$post_date}\n";
+			echo 'Post ' . $post_id . ' "' . $post_title . '" processed – ' . $post_date . "\n";
 
 			$temp_posts_dates[] = $post_date;
 			$total_posts_processed++;
 		}
 
-		if ( count( $posts ) == 50 || ( $idx == ( $pages_count - 1 ) ) ) {
-			file_put_contents( APP_PATH . 'posts/posts-' . date_with_timezone("Ymd") . '-' . sprintf( "%03d", ++$page_number ) . '.json', json_encode( $posts ) );
+		if ( 50 === count( $posts ) || ( ( $pages_count - 1 ) === $idx ) ) {
+			file_put_contents(
+				APP_PATH . 'posts/posts-' . date_with_timezone( 'Ymd' ) . '-' . sprintf( '%03d', ++$page_number ) . '.json',
+				json_encode( $posts )
+			);
 
-			// Store newer post date
+			// Store newer post date.
 			arsort( $temp_posts_dates );
 			$posts_dates[] = array_shift( $temp_posts_dates );
 
@@ -150,24 +161,23 @@ for ( $idx = 0; $idx < $pages_count; $idx++ ) {
 		}
 
 		echo "===========================\n";
-		echo "Processed now: {$total_posts_processed} of {$count_posts}\n\n";
+		echo 'Processed now: ' . $total_posts_processed . ' of ' . $count_posts . "\n\n";
 
 		$args['offset'] += $posts_per_page;
-		sleep(2);
+		sleep( 2 );
 
-	// No posts found
 	} else {
-		var_dump( "============ NO POSTS FOUND =============" );
+		var_dump( '============ NO POSTS FOUND =============' );
 		break;
 	}
 
-	unset($donor);
+	unset( $donor );
 }
 
 echo "===============\n";
-echo "Processed: {$total_posts_processed}\n";
+echo 'Processed: ' . $total_posts_processed . "\n";
 
-// Store newer post date or use previous post date from file if posts are not found
+// Store newer post date or use previous post date from file if posts are not found.
 if ( count( $posts_dates ) ) {
 	arsort( $posts_dates );
 	$newer_post_date = array_shift( $posts_dates );
