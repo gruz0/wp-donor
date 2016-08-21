@@ -1,4 +1,13 @@
 <?php
+/**
+ * Acceptor Settings Helper
+ *
+ * @category AcceptorSettingsHelper
+ * @package  WP_Donor
+ * @author   Alexander Gruzov
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
+ * @link     https://github.com/gruz0/wp-donor
+ */
 
 /**
  * Helper to access to Acceptor's settings
@@ -6,14 +15,31 @@
  * @since 0.1
  */
 class AcceptorSettingsHelper {
+	/**
+	 * Settings
+	 *
+	 * @since 0.1
+	 *
+	 * @var array $_settings
+	 */
 	private $_settings = array();
+
+	/**
+	 * Saved settings to allow lazy loading
+	 *
+	 * @since 0.1
+	 *
+	 * @var array $_saved_settings
+	 */
 	private $_saved_settings = array();
 
 	/**
 	 * Contructor
 	 *
 	 * @since 0.1
-	 * @param array $acceptor_settings
+	 *
+	 * @param array $acceptor_settings Acceptor settings.
+	 *
 	 * @return void
 	 */
 	function __construct( $acceptor_settings ) {
@@ -29,7 +55,7 @@ class AcceptorSettingsHelper {
 	function allow_duplicate_post_title() {
 		if ( ! isset( $this->_saved_settings['allow_duplicate_post_title'] ) ) {
 			if ( isset( $this->_settings['allow_duplicate_post_title'] ) ) {
-				$value = absint( $this->_settings['allow_duplicate_post_title'] ) == 1;
+				$value = absint( $this->_settings['allow_duplicate_post_title'] ) === 1;
 			} else {
 				$value = ALLOW_DUPLICATE_POST_TITLE;
 			}
@@ -49,7 +75,7 @@ class AcceptorSettingsHelper {
 	function save_duplicate_post_title_to_draft() {
 		if ( ! isset( $this->_saved_settings['save_duplicate_post_title_to_draft'] ) ) {
 			if ( isset( $this->_settings['save_duplicate_post_title_to_draft'] ) ) {
-				$value = absint( $this->_settings['save_duplicate_post_title_to_draft'] ) == 1;
+				$value = absint( $this->_settings['save_duplicate_post_title_to_draft'] ) === 1;
 			} else {
 				$value = SAVE_DUPLICATE_POST_TITLE_TO_DRAFT;
 			}
@@ -89,7 +115,7 @@ class AcceptorSettingsHelper {
 	function create_missing_categories() {
 		if ( ! isset( $this->_saved_settings['create_missing_categories'] ) ) {
 			if ( isset( $this->_settings['create_missing_categories'] ) ) {
-				$value = absint( $this->_settings['create_missing_categories'] ) == 1;
+				$value = absint( $this->_settings['create_missing_categories'] ) === 1;
 			} else {
 				$value = CREATE_MISSING_CATEGORIES;
 			}
@@ -129,7 +155,7 @@ class AcceptorSettingsHelper {
 	function compare_category_by() {
 		if ( ! isset( $this->_saved_settings['compare_category_by'] ) ) {
 			if ( isset( $this->_settings['compare_category_by'] ) ) {
-				if ( in_array( esc_attr( $this->_settings['compare_category_by'] ), array( 'slug', 'name' ) ) ) {
+				if ( in_array( esc_attr( $this->_settings['compare_category_by'] ), array( 'slug', 'name' ), true ) ) {
 					$value = esc_attr( $this->_settings['compare_category_by'] );
 				} else {
 					$value = 'slug';
